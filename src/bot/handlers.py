@@ -38,13 +38,10 @@ async def handle_text_message(update: Update, context: CallbackContext) -> None:
     dialogues = context.bot_data['dialogues']
     classifier = context.bot_data['classifier']
     vectorizer = context.bot_data['vectorizer']
+    theme_history = context.bot_data['theme_history']
     
-    answer = get_answer(replica, stats, dialogues, classifier, vectorizer)
-    
-    # Обработка запросов на книги
-    if 'книг' in replica.lower() or 'посоветуй' in replica.lower():
-        answer = get_book_recommendations()
-    
+    answer = get_answer(replica, stats, dialogues, classifier, vectorizer, theme_history)
+
     await update.message.reply_text(answer, parse_mode='HTML')
    
     print(f"--> stats: {stats}")

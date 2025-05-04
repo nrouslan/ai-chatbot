@@ -6,11 +6,11 @@ from nlp.constants import BOT_CONFIG
 from nlp.classification import classify_intent
 from nlp.utils import clear_phrase
 
-def get_answer(replica, stats, dialogues_dataset, classifier, vectorizer):
+def get_answer(replica, stats, dialogues_dataset, classifier, vectorizer, theme_history):
     """Основная функция бота - по фразе (replica) выдать ответ."""
-
+    
     # Проверяем намерения
-    intent = classify_intent(replica, classifier, vectorizer)
+    intent = classify_intent(replica, classifier, vectorizer, theme_history)
 
     # Выбор заготовленной реплики
     if intent:
