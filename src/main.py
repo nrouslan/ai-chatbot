@@ -19,11 +19,10 @@ if __name__ == '__main__':
     
     text_preprocessor = TextPreprocessor()
     pipeline = train_intents_classifier([text_preprocessor.preprocess(text) for text in X_train], y_train)
-    
+
     app = ApplicationBuilder().token(os.getenv("API_KEY")).build()
     
     app.bot_data['intents_data'] = intents_data
-    app.bot_data['text_preprocessor'] = text_preprocessor
     app.bot_data['pipeline'] = pipeline
 
     app.add_handler(CommandHandler("start", start_command_handler))

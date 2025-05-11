@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 
-from utils import get_random_response, get_random_failure_phrase
+from bot import get_response_by_message_text
 
 async def start_command_handler(update: Update, _: CallbackContext) -> None:
     await update.message.reply_text(
@@ -24,20 +24,6 @@ async def help_command_handler(update: Update, _: CallbackContext) -> None:
         "- Помочь выбрать книгу по жанру\n\n"
     )
     
-async def message_text_handler(update: Update, context: CallbackContext) -> None:    
-    text_preprocessor = context.bot_data['text_preprocessor']
-    pipeline = context.bot_data['pipeline']
-    intents_data = context.bot_data['intents_data']
-    
-    cleaned = text_preprocessor.preprocess(update.message.text)
-    intent = pipeline.predict([cleaned])[0]
-
-    response = ''
-    if (intent in intents_data['intents']):
-        response = get_random_response(intents_data['intents'][intent])
-    else:
-        response = get_random_failure_phrase(intents_data)
-    await update.message.reply_text(response)
-
-# TODO: Добавить логи классификации намерений в консоль...
-# TODO: Как сделать так, чтобы модель все-таки не классифицировала намерение, которое не знает...
+async def message_text_handler(update: Update, context: CallbackContext) -> None:        
+    await update.message.reply_text(get_response_by_message_text(
+        update.message.text, context.bot_data['pipeline'], context.bot_data['intents_data']))

@@ -1,4 +1,5 @@
 from natasha import Segmenter, NewsEmbedding, NewsMorphTagger, MorphVocab, Doc
+from nltk import edit_distance
 
 class TextPreprocessor:
     def __init__(self) -> None:
@@ -20,3 +21,9 @@ class TextPreprocessor:
             lemmas.append(token.lemma)
 
         return ' '.join(lemmas)
+
+def is_similar(text1: str, text2: str, threshold: float = 0.5) -> bool:
+    """Проверяет, насколько текста схожи по расстоянию Левенштейна."""
+
+    distance = edit_distance(text1, text2)
+    return distance / max(len(text2), 1) <= threshold

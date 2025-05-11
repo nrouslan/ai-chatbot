@@ -1,6 +1,5 @@
 import json
-import random
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 
 def load_intents_data(path='data/intents.json') -> Optional[Dict]:
     """Загрузка данных о намерениях пользователя."""
@@ -16,11 +15,3 @@ def load_intents_data(path='data/intents.json') -> Optional[Dict]:
         print(f"Неизвестная ошибка: {e}")
     
     return None
-
-def get_random_response(intent_data: Dict[str, List[str]]) -> str:
-    """Возвращает случайный ответ из поля 'responses' объекта намерения."""
-    return random.choice(intent_data['responses'])
-
-def get_random_failure_phrase(intents_data: Dict[str, List[str]]) -> str:
-    """Возвращает случайную фразу из массива 'failure_phrases'."""
-    return random.choice(intents_data['failure_phrases'])
