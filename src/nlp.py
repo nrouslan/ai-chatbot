@@ -1,3 +1,4 @@
+import re
 import speech_recognition as sr
 
 from natasha import Segmenter, NewsEmbedding, NewsMorphTagger, MorphVocab, Doc
@@ -25,6 +26,13 @@ class TextPreprocessor:
             lemmas.append(token.lemma)
 
         return ' '.join(lemmas)
+    
+    def clear_phrase(self, phrase: str) -> str:
+        """Функция очистки фраз от «мусора»."""
+        phrase = phrase.lower()
+        phrase = re.sub(r'[^а-яё0-9\s-]', '', phrase)
+        phrase = re.sub(r'[\s-]+', ' ', phrase).strip()
+        return phrase
 
 def is_similar(text1: str, text2: str, threshold: float = 0.5) -> bool:
     """Проверяет, насколько текста схожи по расстоянию Левенштейна."""

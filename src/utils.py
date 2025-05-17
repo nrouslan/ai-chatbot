@@ -1,7 +1,9 @@
 import json
-from typing import Optional, Dict
 
-def load_intents_data(path='data/intents.json') -> Optional[Dict]:
+from typing import Optional, Dict
+from constants import INTENTS_DATASET_PATH
+
+def load_intents_data(path=INTENTS_DATASET_PATH) -> Optional[Dict]:
     """Загрузка данных о намерениях пользователя."""
     try:
         with open(path, 'r', encoding='utf-8') as file:
