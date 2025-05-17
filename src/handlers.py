@@ -28,8 +28,13 @@ async def help_command_handler(update: Update, _: CallbackContext) -> None:
     )
     
 async def message_text_handler(update: Update, context: CallbackContext) -> None:        
-    await update.message.reply_text(get_response_by_message_text(
-        update.message.text, context.bot_data['pipeline'], context.bot_data['intents_data']))
+    await update.message.reply_text(
+        get_response_by_message_text(
+            update.message.text, 
+            context.bot_data['pipeline'], 
+            context.bot_data['intents_data'],
+            context.bot_data['session_state']
+        ))
 
 async def voice_message_handler(update: Update, context: CallbackContext) -> None:    
     message_id = update.message.message_id
@@ -48,7 +53,10 @@ async def voice_message_handler(update: Update, context: CallbackContext) -> Non
         text = voice_to_text(wav_path)
         
         if text:
-            answer = get_response_by_message_text(text, context.bot_data['pipeline'], context.bot_data['intents_data'])
+            answer = get_response_by_message_text(
+                text, context.bot_data['pipeline'], 
+                context.bot_data['intents_data'],
+                context.bot_data['session_state'])
 
             # Преобразуем ответ в голосовое сообщение
             voice_response_path = os.path.join(VOICE_DIR, f"response_{message_id}.mp3")

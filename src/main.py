@@ -29,6 +29,7 @@ if __name__ == '__main__':
     
     app.bot_data['intents_data'] = intents_data
     app.bot_data['pipeline'] = pipeline
+    app.bot_data['session_state'] = { 'last_intent': '' }
 
     app.add_handler(CommandHandler("start", start_command_handler))
     app.add_handler(CommandHandler("help", help_command_handler))
