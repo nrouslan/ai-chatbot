@@ -16,9 +16,9 @@ def get_response_by_message_text(
     """Возвращает ответ на сообщение пользователя."""
 
     intent = classify_intent(
-        message_text, 
-        pipeline, 
-        intents_data['intents'], 
+        message_text,
+        pipeline,
+        intents_data['intents'],
         theme_history
     )
 
@@ -44,14 +44,19 @@ def classify_intent(
                 theme_history[:] = theme_history[i:]
             break
     else:
+        # Если ни одна тема не сработала, пробуем без темы
         intent = classify_intent_by_theme(message_text, pipeline, intents)
 
     if intent:
+        # Обновляем историю, если интент определён и у него есть тема
         theme = intents[intent].get('theme_gen')
         if theme and theme not in theme_history:
             theme_history.insert(0, theme)
             if len(theme_history) > THEME_HISTORY_LENGTH:
                 theme_history.pop()
+    else:
+        # Если интент не определён — очищаем историю тем
+        theme_history.clear()
 
     return intent
 

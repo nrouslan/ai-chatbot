@@ -1,7 +1,7 @@
 import json
 
 from typing import Optional, Dict
-from constants import INTENTS_DATASET_PATH
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 def load_json_data(path: str) -> Optional[Dict]:
     """Загрузка данных о намерениях пользователя."""
@@ -17,3 +17,12 @@ def load_json_data(path: str) -> Optional[Dict]:
         print(f"Неизвестная ошибка: {e}")
     
     return None
+
+def get_genre_keyboard() -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Фантастика", callback_data="genre_Фантастика")],
+        [InlineKeyboardButton(text="Детектив", callback_data="genre_Детектив")],
+        [InlineKeyboardButton(text="Бизнес", callback_data="genre_Бизнес")],
+        [InlineKeyboardButton(text="Любой жанр", callback_data="genre_any")]
+    ])
+    return keyboard
