@@ -2,7 +2,7 @@ import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 
-from bot import get_response_by_message_text
+from bot import get_response_by_message_text, get_book_recommendations
 from nlp import convert_ogg_to_wav, text_to_voice, voice_to_text
 from constants import VOICE_DIR
 
@@ -33,8 +33,8 @@ async def message_text_handler(update: Update, context: CallbackContext) -> None
             update.message.text, 
             context.bot_data['pipeline'], 
             context.bot_data['intents_data'],
-            context.bot_data['session_state'],
-            context.bot_data['dialogues']
+            context.bot_data['dialogues'],
+            context.bot_data['theme_history']
         ))
 
 async def voice_message_handler(update: Update, context: CallbackContext) -> None:    
@@ -57,8 +57,8 @@ async def voice_message_handler(update: Update, context: CallbackContext) -> Non
             answer = get_response_by_message_text(
                 text, context.bot_data['pipeline'], 
                 context.bot_data['intents_data'],
-                context.bot_data['session_state'],
-                context.bot_data['dialogues'])
+                context.bot_data['dialogues'],
+                context.bot_data['theme_history'])
 
             # Преобразуем ответ в голосовое сообщение
             voice_response_path = os.path.join(VOICE_DIR, f"response_{message_id}.mp3")
@@ -79,3 +79,17 @@ async def voice_message_handler(update: Update, context: CallbackContext) -> Non
             os.remove(ogg_path)
         if os.path.exists(wav_path):
             os.remove(wav_path) 
+
+async def button_handler(update: Update, context: CallbackContext) -> None:
+    book_ads_data = context.bot_data['book_ads_data']
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data.startswith('genre_'):
+        genre = query.data.split('_')[1]
+        if genre == 'any':
+            response = get_book_recommendations(book_ads_data['book_ads'])
+        else:
+            response = get_book_recommendations(book_ads_data['book_ads'], genre)
+        
+        await query.edit_message_text(text=response, parse_mode='HTML')

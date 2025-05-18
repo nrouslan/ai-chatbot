@@ -1,15 +1,15 @@
 import os
 
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 from dotenv import load_dotenv
 
 from handlers import start_command_handler, help_command_handler, \
-    message_text_handler, voice_message_handler
+    message_text_handler, voice_message_handler, button_handler
 
 from ml import get_intents_data_and_targets, train_intents_classifier
 from nlp import TextPreprocessor
-from utils import load_intents_data
-from constants import VOICE_DIR
+from utils import load_json_data
+from constants import VOICE_DIR, INTENTS_DATASET_PATH, BOOK_ADS_PATH
 
 from dialogues import prepare_dialogues
 
@@ -21,7 +21,9 @@ if __name__ == '__main__':
     # Загрузка переменных из .env в окружение.
     load_dotenv()
 
-    intents_data = load_intents_data()
+    intents_data = load_json_data(INTENTS_DATASET_PATH)
+    book_ads_data = load_json_data(BOOK_ADS_PATH)
+
     X_train, y_train = get_intents_data_and_targets(intents_data)
 
     text_preprocessor = TextPreprocessor()
@@ -32,14 +34,16 @@ if __name__ == '__main__':
     dialogues = prepare_dialogues()
 
     app.bot_data['intents_data'] = intents_data
-    app.bot_data['pipeline'] = pipeline
-    app.bot_data['session_state'] = { 'last_intent': '' }
+    app.bot_data['book_ads_data'] = book_ads_data
     app.bot_data['dialogues'] = dialogues
+    app.bot_data['pipeline'] = pipeline
+    app.bot_data['theme_history'] = []
 
     app.add_handler(CommandHandler("start", start_command_handler))
     app.add_handler(CommandHandler("help", help_command_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_text_handler))
     app.add_handler(MessageHandler(filters.VOICE, voice_message_handler))
+    app.add_handler(CallbackQueryHandler(button_handler))
 
     print("--> Telegram-бот запущен! Ссылка на бота: https://t.me/bookseller1111_bot")
 
