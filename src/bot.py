@@ -11,7 +11,8 @@ def get_response_by_message_text(
     pipeline: Pipeline, 
     intents_data: Dict[str, dict],
     dialogues: Dialogues,
-    theme_history: List[str]
+    theme_history: List[str],
+    book_ads: Dict[str, list]
 ) -> str:
     """Возвращает ответ на сообщение пользователя."""
 
@@ -26,6 +27,10 @@ def get_response_by_message_text(
         responses = intents_data['intents'].get(intent, {}).get('responses')
         if responses:
             return get_random_response(responses)
+    
+    book_result = handle_book_query(book_ads, message_text)
+    if (book_result):
+        return book_result
 
     return generate_answer(message_text, dialogues) or get_random_failure_phrase(intents_data['failure_phrases'])
 
@@ -60,6 +65,44 @@ def classify_intent(
 
     return intent
 
+def handle_book_query(book_ads: Dict[str, List[Dict]], message_text: str) -> str:
+    """Обрабатывает пользовательский ввод и возвращает подробности о книге, если найдена похожая."""
+    
+    text_preprocessor = TextPreprocessor()
+    cleaned_text = text_preprocessor.clear_phrase(message_text)
+    candidates = []
+
+    # Защита от бессмысленного ввода
+    if len(cleaned_text) < 4:
+        return None
+
+    for genre_books in book_ads.values():
+        for book in genre_books:
+            title = book.get("title", "")
+            cleaned_title = text_preprocessor.clear_phrase(title)
+
+            # Подстрочное совпадение — при достаточной длине
+            if len(cleaned_text) >= 5 and cleaned_text in cleaned_title:
+                candidates.append((0.0, title))
+                continue
+
+            # Расчет расстояния Левенштейна
+            if abs(len(cleaned_text) - len(cleaned_title)) / max(len(cleaned_title), 1) < 0.3:
+                dist = edit_distance(cleaned_text, cleaned_title)
+                score = dist / max(len(cleaned_title), 1)
+
+                if score < 0.3:  # допустимый уровень "похожести"
+                    candidates.append((score, title))
+
+    if not candidates:
+        return None
+
+    best_match = sorted(candidates, key=lambda x: x[0])[0]
+    if best_match[0] > 0.25:  # даже лучший кандидат недостаточно близок
+        return "Не удалось точно определить книгу. Попробуйте переформулировать запрос."
+
+    return get_book_details(book_ads, best_match[1])
+    
 def classify_intent_by_theme(message_text: str, pipeline: Pipeline, intents: Dict, theme=None):
     """Функция для классификации намерения по теме."""
 
@@ -143,3 +186,32 @@ def get_book_recommendations(book_ads: Dict, genre: Optional[str] = None) -> str
         )
     response += "Хотите узнать больше о какой-то из них?"
     return response
+
+def get_book_details(book_ads: Dict[str, list], title: str) -> str:
+    """Возвращает подробную информацию о книге по её названию."""
+
+    for genre, books in book_ads.items():
+        for book in books:
+            if book.get("title", "").lower() == title.lower():
+                details = (
+                    f"📚 <b>{book['title']}</b>\n"
+                    f"Автор: {book.get('author', 'Неизвестно')}\n"
+                    f"Год издания: {book.get('year', '—')}\n"
+                    f"Рейтинг: {book.get('rating', '—')}/5\n"
+                    f"Страниц: {book.get('pages', '—')}\n"
+                    f"ISBN: {book.get('isbn', '—')}\n"
+                    f"Цена: {book.get('price', '—')}\n"
+                    f"Описание: {book.get('description', '—')}\n"
+                )
+
+                # Добавим цитату, если есть
+                if book.get("quotes"):
+                    details += f"\n💬 Цитата: «{book['quotes'][0]}»"
+
+                # Похожие книги
+                if book.get("similar"):
+                    details += f"\n📖 Похожие книги: {', '.join(book['similar'])}"
+
+                return details
+
+    return "Книга не найдена. Убедитесь, что название указано точно."

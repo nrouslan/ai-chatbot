@@ -32,7 +32,8 @@ async def message_text_handler(update: Update, context: CallbackContext) -> None
         context.bot_data['pipeline'],
         context.bot_data['intents_data'],
         context.bot_data['dialogues'],
-        theme_history
+        theme_history,
+        context.bot_data['book_ads_data']['book_ads']
     )
 
     # Проверяем, нужно ли добавить клавиатуру
@@ -43,8 +44,6 @@ async def message_text_handler(update: Update, context: CallbackContext) -> None
         )
     else:
         await update.message.reply_text(response_text)
-
-    # TODO: Добавить предсказание ключа жанра на основе переданного сообщения
 
     # Дополнительное сообщение, если тема - реклама книги
     if theme_history and theme_history[0] == 'book_advertisement':
@@ -71,14 +70,15 @@ async def voice_message_handler(update: Update, context: CallbackContext) -> Non
         if not text:
             await update.message.reply_text("Извините, я не смог распознать ваше сообщение.")
             return
-        
+
         # Получаем ответ и преобразуем его в голос
         answer = get_response_by_message_text(
             text, 
             context.bot_data['pipeline'], 
             context.bot_data['intents_data'],
             context.bot_data['dialogues'],
-            context.bot_data['theme_history']
+            context.bot_data['theme_history'],
+            context.bot_data['book_ads_data']['book_ads']
         )
         text_to_voice(answer, response_path)
 
