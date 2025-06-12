@@ -1,5 +1,5 @@
 import os
-
+from init_db import initialize_database
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 from dotenv import load_dotenv
 
@@ -21,8 +21,12 @@ if __name__ == '__main__':
     # Загрузка переменных из .env в окружение.
     load_dotenv()
 
+    # Загружаем данные из JSON
     intents_data = load_json_data(INTENTS_DATASET_PATH)
     book_ads_data = load_json_data(BOOK_ADS_PATH)
+    
+    # Инициализируем базу данных
+    db = initialize_database(book_ads_data)
 
     X_train, y_train = get_intents_data_and_targets(intents_data)
 
@@ -33,8 +37,10 @@ if __name__ == '__main__':
 
     dialogues = prepare_dialogues()
 
+    print(db.get_all_books_data())
+
     app.bot_data['intents_data'] = intents_data
-    app.bot_data['book_ads_data'] = book_ads_data
+    app.bot_data['book_ads_data'] = db.get_all_books_data()
     app.bot_data['dialogues'] = dialogues
     app.bot_data['pipeline'] = pipeline
     app.bot_data['theme_history'] = []

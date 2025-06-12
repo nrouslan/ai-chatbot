@@ -16,11 +16,12 @@ async def start_command_handler(update: Update, _: CallbackContext) -> None:
 
 async def help_command_handler(update: Update, _: CallbackContext) -> None:
     await update.message.reply_text(
-        "Я могу:\n"
-        "- Рекомендовать книги (просто напишите 'Посоветуй книгу')\n"
-        "- Рассказать о конкретных книгах\n"
-        "- Принимать голосовые сообщения\n"
-        "- Помочь выбрать книгу по жанру\n\n"
+        "Я могу:\n\n"
+        "📚 Рекомендовать книги (просто напишите 'Посоветуй книгу')\n"
+        "🔍 Рассказать о конкретных книгах (назовите автора или название)\n"
+        "🎙️ Принимать голосовые сообщения (просто отправьте аудио)\n"
+        "🌿 Помочь выбрать книгу по жанру (укажите предпочтения)\n\n"
+        "💬 Что вас интересует?"
     )
     
 async def message_text_handler(update: Update, context: CallbackContext) -> None:
@@ -43,7 +44,7 @@ async def message_text_handler(update: Update, context: CallbackContext) -> None
             reply_markup=get_genre_keyboard()
         )
     else:
-        await update.message.reply_text(response_text)
+        await update.message.reply_text(response_text, parse_mode='HTML')
 
     # Дополнительное сообщение, если тема - реклама книги
     if theme_history and theme_history[0] == 'book_advertisement':
